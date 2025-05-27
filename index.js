@@ -19,12 +19,18 @@ app.get('/record', async (req, res) => {
     browser = await puppeteer.launch({
       executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium',
       headless: false,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--kiosk',
+        '--start-fullscreen',
+        '--window-size=1280,720',
+        `--app=${targetUrl}`
+      ]
     });
 
-    const page = await browser.newPage();
-    await page.setViewport({ width: 1280, height: 720 });
-    await page.goto(targetUrl, { waitUntil: 'networkidle2' });
+    // Optional: wait a few seconds to ensure page loads before recording
+    await new Promise(resolve => setTimeout(resolve, 3000));
 
     const ffmpeg = exec(`ffmpeg -y -video_size 1280x720 -f x11grab -i :99 -t 60 ${videoPath}`);
 
