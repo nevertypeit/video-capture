@@ -1,8 +1,8 @@
 FROM node:18-bullseye
 
-# Install Chromium and required packages
+# Install Chromium-Browser and dependencies
 RUN apt-get update && apt-get install -y \
-    chromium \
+    chromium-browser \
     ffmpeg \
     xvfb \
     libgtk-3-0 \
@@ -18,7 +18,8 @@ RUN apt-get update && apt-get install -y \
     unzip \
     && rm -rf /var/lib/apt/lists/*
 
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+# Tell Puppeteer to use system Chromium
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 ENV PUPPETEER_SKIP_DOWNLOAD=true
 
 WORKDIR /app
@@ -27,4 +28,5 @@ RUN npm install
 COPY . .
 
 EXPOSE 3000
+
 CMD xvfb-run --server-args="-screen 0 1280x720x24" node index.js
