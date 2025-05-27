@@ -22,6 +22,7 @@ app.get('/record', async (req, res) => {
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
+        '--disable-infobars',
         '--kiosk',
         '--start-fullscreen',
         '--window-size=1280,720',
@@ -29,8 +30,15 @@ app.get('/record', async (req, res) => {
       ]
     });
 
-    // Optional: wait a few seconds to ensure page loads before recording
-    await new Promise(resolve => setTimeout(resolve, 3000));
+    const pages = await browser.pages();
+    const page = pages[0];
+    await page.evaluateOnNewDocument(() => {
+      Object.defineProperty(navigator, 'webdriver', {
+        get: () => false,
+      });
+    });
+
+    await new Promise(resolve => setTimeout(resolve, 3000)); // wait for page to stabilize
 
     const ffmpeg = exec(`ffmpeg -y -video_size 1280x720 -f x11grab -i :99 -t 60 ${videoPath}`);
 
